@@ -52,6 +52,7 @@ public class Indexer {
   public static final String TITLE = "title";
   public static final String HEADLINE = "headline";
   public static final String DATELINE = "dateline";
+  public static final String TEXT = "text";
   public static final String CODE = "code";
 
   private static final Logger log = LoggerFactory.getLogger(Indexer.class);
@@ -102,6 +103,7 @@ public class Indexer {
     doc.add(new TextField(TITLE, newsItem.title(), Field.Store.YES));
     doc.add(new TextField(HEADLINE, newsItem.headline(), Field.Store.YES));
     doc.add(new TextField(DATELINE, newsItem.dateline(), Field.Store.YES));
+    doc.add(new TextField(TEXT, newsItem.text(), Field.Store.YES));
 
     for (String code : newsItem.codes()) {
       doc.add(new TextField(CODE, code, Field.Store.YES));
