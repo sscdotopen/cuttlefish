@@ -18,7 +18,9 @@
  * USA
  */
 
-package de.tuberlin.dima.cuttlefish.parsing;
+package de.tuberlin.dima.cuttlefish.preprocessing.parsing;
+
+import de.tuberlin.dima.cuttlefish.preprocessing.NewsItem;
 
 public interface NewsItemProcessor {
 

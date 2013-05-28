@@ -18,10 +18,12 @@
  * USA
  */
 
-package de.tuberlin.dima.cuttlefish.parsing;
+package de.tuberlin.dima.cuttlefish.preprocessing.parsing;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Multimap;
+import de.tuberlin.dima.cuttlefish.preprocessing.NewsItem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,7 +34,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 
 class NewsItemXmlParser {
 
@@ -56,12 +57,21 @@ class NewsItemXmlParser {
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     Date date =  df.parse(newsItemNode.getAttributes().getNamedItem("date").getNodeValue());
 
-    Set<String> codes = Sets.newHashSet();
-    NodeList codeNodes = doc.getElementsByTagName("code");
-    int numCodes = codeNodes.getLength();
-    for (int index = 0; index < numCodes; index++) {
-      String code = codeNodes.item(index).getAttributes().getNamedItem("code").getNodeValue();
-      codes.add(code);
+    Multimap<String,String> codes = ArrayListMultimap.create();
+    NodeList codesNodes = doc.getElementsByTagName("codes");
+    int numCodes = codesNodes.getLength();
+    for (int codesIndex = 0; codesIndex < numCodes; codesIndex++) {
+      Node codesNode = codesNodes.item(codesIndex);
+      String codeClass = codesNode.getAttributes().getNamedItem("class").getNodeValue();
+
+      NodeList codeNodes = codesNode.getChildNodes();
+      for (int codeIndex = 0; codeIndex < codeNodes.getLength(); codeIndex++) {
+
+        if ("code".equals(codeNodes.item(codeIndex).getNodeName())) {
+          String codeValue = codeNodes.item(codeIndex).getAttributes().getNamedItem("code").getNodeValue();
+          codes.put(codeClass, codeValue);
+        }
+      }
     }
 
     Map<String,String> dcs = Maps.newHashMap();

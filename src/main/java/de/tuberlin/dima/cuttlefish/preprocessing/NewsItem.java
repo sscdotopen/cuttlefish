@@ -18,11 +18,12 @@
  * USA
  */
 
-package de.tuberlin.dima.cuttlefish.parsing;
+package de.tuberlin.dima.cuttlefish.preprocessing;
+
+import com.google.common.collect.Multimap;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 
 public class NewsItem {
 
@@ -35,11 +36,11 @@ public class NewsItem {
   private final String text;
   private final String dateline;
 
-  private final Set<String> codes;
+  private final Multimap<String, String> codes;
   private final Map<String,String> dcs;
 
-  public NewsItem(int itemID, Date date, String title, String headline, String text, String dateline, Set<String> codes,
-                  Map<String, String> dcs) {
+  public NewsItem(int itemID, Date date, String title, String headline, String text, String dateline,
+                  Multimap<String, String> codes, Map<String, String> dcs) {
     this.itemID = itemID;
     this.date = date;
     this.title = title;
@@ -74,7 +75,7 @@ public class NewsItem {
     return dateline;
   }
 
-  public Set<String> codes() {
+  public Multimap<String, String> codes() {
     return codes;
   }
 

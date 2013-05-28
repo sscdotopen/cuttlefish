@@ -18,9 +18,10 @@
  * USA
  */
 
-package de.tuberlin.dima.cuttlefish.parsing;
+package de.tuberlin.dima.cuttlefish.preprocessing.parsing;
 
 import com.google.common.io.Closeables;
+import de.tuberlin.dima.cuttlefish.preprocessing.NewsItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
