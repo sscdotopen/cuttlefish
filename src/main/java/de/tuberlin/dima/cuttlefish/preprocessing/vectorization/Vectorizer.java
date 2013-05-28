@@ -1,13 +1,31 @@
+/*
+ * Copyright (C) 2013 Database Systems and Information Management Group,
+ * TU Berlin
+ *
+ * cuttlefish is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
+ *
+ * cuttlefish is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with cuttlefish; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
+
 package de.tuberlin.dima.cuttlefish.preprocessing.vectorization;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Closeables;
-import de.tuberlin.dima.cuttlefish.preprocessing.indexing.Indexer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -22,6 +40,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.mahout.math.RandomAccessSparseVector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.VectorWritable;
+import org.apache.mahout.math.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +99,7 @@ public class Vectorizer {
         int itemID = doc.getField("itemID").numericValue().intValue();
 
         RandomAccessSparseVector documentVector = new RandomAccessSparseVector(dict.numFeatures());
-        Multimap<String, String> codes = ArrayListMultimap.create();
+        Multimap<String, String> codes = HashMultimap.create();
 
         for (IndexableField field : doc.getFields()) {
 
@@ -120,8 +139,12 @@ public class Vectorizer {
           }
         }
 
+        Vector featureVector = new SequentialAccessSparseVector(documentVector);
+
+        weighting.normalize(featureVector);
+
         idAndCodes.set(itemID, codes);
-        vectorWritable.set(new SequentialAccessSparseVector(documentVector));
+        vectorWritable.set(featureVector);
         writer.append(idAndCodes, vectorWritable);
 
         numDocsVectorized++;
@@ -141,8 +164,6 @@ public class Vectorizer {
       Closeables.close(writer, true);
     }
 
-
-
   }
 
   private int maxTermFrequency(Terms termFreqVector) throws Exception {
@@ -151,7 +172,7 @@ public class Vectorizer {
 
     TermsEnum te = termFreqVector.iterator(null);
 
-    while ((te.next()) != null) {
+    while (te.next() != null) {
       int termFrequency = (int) te.totalTermFreq();
       maxTermFrequency = Math.max(maxTermFrequency, termFrequency);
     }
