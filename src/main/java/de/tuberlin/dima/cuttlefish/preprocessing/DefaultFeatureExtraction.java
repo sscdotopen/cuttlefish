@@ -3,10 +3,12 @@ package de.tuberlin.dima.cuttlefish.preprocessing;
 import de.tuberlin.dima.cuttlefish.preprocessing.indexing.FeatureExtraction;
 import de.tuberlin.dima.cuttlefish.preprocessing.indexing.StringFieldWithTermVectors;
 import de.tuberlin.dima.cuttlefish.preprocessing.indexing.TextFieldWithTermVectors;
-import de.tuberlin.dima.cuttlefish.preprocessing.NewsItem;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.IntField;
+import org.apache.lucene.util.Version;
 
 import java.util.Map;
 
@@ -20,6 +22,11 @@ public class DefaultFeatureExtraction implements FeatureExtraction {
   public static final String HEADLINE = "headline";
   public static final String DATELINE = "dateline";
   public static final String TEXT = "text";
+
+  @Override
+  public Analyzer analyzerToUse() {
+    return new EnglishAnalyzer(Version.LUCENE_42);
+  }
 
   @Override
   public Document asDocument(NewsItem newsItem) {

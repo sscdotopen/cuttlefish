@@ -1,5 +1,7 @@
 package de.tuberlin.dima.cuttlefish.preprocessing.vectorization;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.io.Closeables;
 import de.tuberlin.dima.cuttlefish.preprocessing.indexing.Indexer;
 import org.apache.hadoop.conf.Configuration;
@@ -49,8 +51,8 @@ public class Vectorizer {
       reader = DirectoryReader.open(new SimpleFSDirectory(luceneIndexDir));
 
       writer = SequenceFile.createWriter(fs, conf, new Path(outputDir.toString(), "documentVectors.seq"),
-          IntWritable.class, VectorWritable.class);
-      IntWritable itemIDWritable = new IntWritable();
+          IDAndCodes.class, VectorWritable.class);
+      IDAndCodes idAndCodes = new IDAndCodes();
       VectorWritable vectorWritable = new VectorWritable();
 
       Fields fields = MultiFields.getFields(reader);
@@ -66,7 +68,6 @@ public class Vectorizer {
             while ((text = termsEnum.next()) != null) {
               dict.addTextFeature(field, text.utf8ToString());
             }
-
           }
         }
       }
@@ -79,6 +80,7 @@ public class Vectorizer {
         int itemID = doc.getField("itemID").numericValue().intValue();
 
         RandomAccessSparseVector documentVector = new RandomAccessSparseVector(dict.numFeatures());
+        Multimap<String, String> codes = ArrayListMultimap.create();
 
         for (IndexableField field : doc.getFields()) {
 
@@ -111,12 +113,16 @@ public class Vectorizer {
               }
             }
 
+          } else if (fieldName.startsWith("bip:")) {
+            for (String value : doc.getValues(fieldName)) {
+              codes.put(fieldName, value);
+            }
           }
         }
 
-        itemIDWritable.set(itemID);
+        idAndCodes.set(itemID, codes);
         vectorWritable.set(new SequentialAccessSparseVector(documentVector));
-        writer.append(itemIDWritable, vectorWritable);
+        writer.append(idAndCodes, vectorWritable);
 
         numDocsVectorized++;
         if (numDocsVectorized % 100 == 0) {
@@ -126,10 +132,17 @@ public class Vectorizer {
 
       log.info("Vectorized {} documents", numDocsVectorized);
 
+      dict.writeToFile(new File(outputDir, "features.txt"));
+
+      log.info("Wrote feature dictionary");
+
     } finally {
       Closeables.close(reader, true);
       Closeables.close(writer, true);
     }
+
+
+
   }
 
   private int maxTermFrequency(Terms termFreqVector) throws Exception {

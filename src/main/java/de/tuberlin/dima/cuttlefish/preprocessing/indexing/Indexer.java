@@ -51,7 +51,7 @@ public class Indexer {
 
   public void index(File indexDir) throws Exception {
     Directory index = new SimpleFSDirectory(indexDir);
-    Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_42);
+    Analyzer analyzer = featureExtraction.analyzerToUse();
     IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_42, analyzer);
     final IndexWriter writer = new IndexWriter(index, config);
 
